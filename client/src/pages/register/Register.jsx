@@ -1,9 +1,7 @@
 import logo from "../../assets/logo.png";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 // this is done to validate input field from cdn hook form.
-import { useState } from "react";
-// this is for the password visibility
 import {
   validateEmail,
   validatePassword,
@@ -11,6 +9,13 @@ import {
   validatefullname,
 } from "../../utils/formValidate";
 // This is for validating the email, password, username and fullname
+import { useState } from "react";
+// this is for the password visibility
+import MetaArgs from "../../components/MetaArgs";
+import { registerUser } from "../../api/auth";
+import { toast } from "sonner";
+import { useAuth } from "../../store";
+import handleError from "../../utils/handleErrors";
 
 export default function Register() {
   const {
@@ -20,15 +25,36 @@ export default function Register() {
   } = useForm();
   //   this is to validate the text input we are designing, it is for the form in the register page.
 
+  // distructuring useAuth
+  const { setAccessToken } = useAuth();
+  const navigate = useNavigate();
+
   const [revealPassword, setRevealPassword] = useState(false); // Track password visibility state
 
   // Function to toggle password visibility
   const togglePassword = () => {
-    setRevealPassword((prev)=> !prev);
+    setRevealPassword((prev) => !prev);
+  };
+
+  const onFormSubmit = async (data) => {
+    try {
+      const res = await registerUser(data);
+      if (res.status === 201) {
+        toast.success(res.data.message);
+        setAccessToken(res.data.accessToken);
+        navigate("/");
+      }
+    } catch (error) {
+      handleError(error);
+    }
   };
 
   return (
     <>
+      <MetaArgs
+        title="Sign up to InstaShots"
+        content="Get access to InstaShots"
+      />
       <div className="w-[90%] md:w-[350px] border rounded-md border-[#A1A1A1] py-[20px] px-[28px] ">
         <div className="flex justify-center ">
           <Link to="/">
@@ -37,10 +63,10 @@ export default function Register() {
         </div>
         {/* for designing of the form */}
 
-        <form onSubmit={handleSubmit()}>
+        <form onSubmit={handleSubmit(onFormSubmit)}>
           <div className="md:max-w-[400px] mx-auto mt-10 ">
             <label className="floating-label">
-              <span>Username</span>
+              <span>Email</span>
               <input
                 type="text"
                 placeholder="Email"
@@ -98,7 +124,7 @@ export default function Register() {
 
           <div className="md:max-w-[400px] mx-auto mt-5">
             <label className="floating-label">
-              <span>Username</span>
+              <span>Password</span>
               <input
                 type={revealPassword ? "text" : "password"} //// Toggle password visibility based on state
                 placeholder="Password"
@@ -143,10 +169,17 @@ export default function Register() {
           className="text-white mt-7 py-4 border border-[#A1A1A1] rounded-[7px] w-full md:w-[350px] h-[60px] text-center mb-10"
           type="submit"
         >
-          <span className="text-[black]">Already have an account?</span>
+          <span
+            className="text-[
+          black]"
+          >
+            Already have an account?
+          </span>
           <span className="text-[#8D0D76] font-bold"> Log In</span>
         </button>
       </div>
     </>
   );
 }
+
+// LAZY LOADING AND CODE SPLITING: are performance technique that work together to improve web application speed
