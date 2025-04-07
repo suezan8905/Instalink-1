@@ -15,7 +15,8 @@ function App() {
       <Toaster position="top-center" expand={true} richColors />
       <AppRoutes />
     </HelmetProvider>
-  );
+  ); 
 }
 
+// git commit -m "working on auth pa
 export default App;

@@ -77,12 +77,12 @@ export default function ForgottenPassword() {
         <button className="text-white mt-5 py-4 border border-[#A1A1A1] rounded-[7px] w-full md:w-[350px] h-[80px] text-center mb-10 ">
           <span className="text-black">
             Already have an account?
-            <span className="text-[#8D0D76] font-bold"> Login</span>
+            <Link to={"/auth/login"} className="text-[#8D0D76] font-bold"> Login</Link>
           </span>
           <br />
           <div className="mt-2 mb-2">
             <span className="text-black">
-              New User?<span className="text-[#8D0D76] font-bold"> Sign Up</span>
+              New User?<Link to={"/auth/register"} className="text-[#8D0D76] font-bold"> Sign Up</Link>
             </span>
           </div>
         </button>

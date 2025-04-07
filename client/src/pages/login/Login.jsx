@@ -125,7 +125,7 @@ export default function Register() {
           type="submit"
         >
           <span className="text-[black]">Don't have an account?</span>
-          <span className="text-[#8D0D76] font-bold"> Sign Up</span>
+          <Link to={"/auth/register"} className="text-[#8D0D76] font-bold"> Sign Up</Link>
         </button>
       </div>
     </>
