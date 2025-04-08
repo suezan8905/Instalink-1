@@ -24,6 +24,12 @@ app.use(express.urlencoded({ extended: true }));
 app.disabled("x-powered-by");
 // this is to prevent people from having information on what was used to build the project.(ie. disable tech stack)
 
+//home server route
+// so that when vercwl start our sever, it can go to certain homepage
+app.get("/", (req,res) => {
+  res.send("Hello Instashots server");
+});
+
 // api
 app.use("/api/auth", userRoutes);
 
