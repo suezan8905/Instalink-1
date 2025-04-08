@@ -9,7 +9,7 @@ import { loginUser } from "../../api/auth";
 import handleError from "../../utils/handleErrors";
 import { toast } from "sonner";
 import { useAuth } from "../../store";
-import {validatePassword, validateUsername } from "../../utils/formValidate";
+import { validatePassword, validateUsername } from "../../utils/formValidate";
 
 export default function Register() {
   const {
@@ -19,7 +19,7 @@ export default function Register() {
   } = useForm();
   //   this is to validate the text input we are designing, it is for the form in the register page.
   const navigate = useNavigate();
-  const {setAccessToken} = useAuth()
+  const { setAccessToken } = useAuth();
 
   const [revealPassword, setRevealPassword] = useState(false); // Track password visibility state
 
@@ -58,7 +58,7 @@ export default function Register() {
         </div>
         {/* for designing of the form */}
 
-        <form onSubmit={handleSubmit(onFormSubmit)}> 
+        <form onSubmit={handleSubmit(onFormSubmit)}>
           <div className="md:max-w-[400px] mx-auto mt-5">
             <label className="floating-label">
               <span>Username</span>
@@ -88,7 +88,8 @@ export default function Register() {
                 id="Password"
                 // the form was gotten from the previous project, it is majorly for the text area.
                 {...register("password", {
-                  validate: (value) => validatePassword(value),
+                  validate: (value) =>
+                     validatePassword(value, "Password is required"),
                 })}
               />
 
@@ -114,7 +115,7 @@ export default function Register() {
             </button>
 
             <div className="text-center mt-4 mb-4">
-              <Link to={"/auth/forgottenpassword"}>Forgot Password?</Link>
+              <Link to={"/auth/forgot-password"}>Forgot Password?</Link>
             </div>
           </div>
         </form>
@@ -125,7 +126,10 @@ export default function Register() {
           type="submit"
         >
           <span className="text-[black]">Don't have an account?</span>
-          <Link to={"/auth/register"} className="text-[#8D0D76] font-bold"> Sign Up</Link>
+          <Link to={"/auth/register"} className="text-[#8D0D76] font-bold">
+            {" "}
+            Sign Up
+          </Link>
         </button>
       </div>
     </>

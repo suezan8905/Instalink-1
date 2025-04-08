@@ -41,7 +41,7 @@ export const registerUser = async (req, res, next) => {
     await user.save(); //this is to save the document from mongoose (small l.u- it has everything we did in the model user )
 
     //specify the client verifyAccountlink
-    const verifyAccountlink = `${process.env.CLIENT_URL}/account/verify-account/
+    const verifyAccountlink = `${process.env.CLIENT_URL}/verify-email/
     ${user._id}/${user.verificationToken}`;
     // send email to user
     await sendMail({
@@ -60,7 +60,8 @@ export const registerUser = async (req, res, next) => {
     // send a response to the client
     res.status(201).json({
       success: true,
-      message: "Account created successfully",
+      message:
+        "Account created successfully, please check your mail in order to verify your account",
       accessToken,
     });
   } catch (error) {
@@ -122,8 +123,7 @@ export const resendEmailVerificationLink = async (req, res, next) => {
     user.verificationToken = verifyAccountToken;
     user.verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
     await user.save();
-    const verifyAccountlink = `${process.env.CLIENT_URL}/account/verify-account/
-    ${user._id}/${user.verificationToken}`;
+    const verifyAccountlink = `${process.env.CLIENT_URL}/verify-email/${user._id}/${user.verificationToken}`;
     // send email to user
     await sendMail({
       fullname: user.fullname,
@@ -196,14 +196,13 @@ export const sendForgotPasswordMail = async (req, res, next) => {
     if (!user) {
       return next(createHttpError(404, "User account not found"));
     }
-    const resetToken = crypto.randomBytes(20).toString("hex");
+  
     // generate the verirification token
-    const verifyAccountToken = crypto.randomBytes(20).toString("hex");
+    const resetToken = crypto.randomBytes(20).toString("hex");
     user.passwordResetToken = resetToken;
     user.passwordResetTokenExpires = Date.now() + 30 * 60 * 1000;
     await user.save();
-    const resetPasswordLink = `${process.env.CLIENT_URL}/account/reset-password/
-    ${user._id}/${user.passwordResetToken}`;
+    const resetPasswordLink = `${process.env.CLIENT_URL}/auth/reset-password/${user._id}/${user.passwordResetToken}`;
     // send email to user
     await sendMail({
       fullname: user.fullname,
@@ -217,87 +216,65 @@ export const sendForgotPasswordMail = async (req, res, next) => {
       subject: "Password Reset",
       to: user.email,
     });
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Password reset link has been sent to your email",
-      });
+    res.status(200).json({
+      success: true,
+      message: "Password reset link has been sent to your email",
+    });
   } catch (error) {
     next(error);
   }
 };
 
-export const resetPassword = async(req, res, next)=> { // this is for the link sent for the resent password
+export const resetPassword = async (req, res, next) => {
+  // this is for the link sent for the resent password
   const { newPassword, confirmPassword } = req.body;
   const { userId, passwordToken } = req.params;
   try {
-    if(!newPassword || !confirmPassword) {
+    if (!newPassword || !confirmPassword) {
       return next(
         createHttpError(404, "New password or confirm password is missing")
       );
     }
-// find user
-const user = await User.findOne({
-  _id: userId,
-  passwordResetToken: passwordToken,
-}).select("+passwordResetToken +passwordResetTokenExpires");
-if (!user) {
-  return next(createHttpError(404, "User or invalid reset token"));
-}
-// check token expiry
-if (user.passwprdResetTokenExpires < Date.now()) {
-  user.passwordResetToken = null;
-  user.passwordResetTokenExpires = null;
-  await user.save();
-  return next (
-    createHttpError(
-      401,
-      "Password reseet link has expired, please request a new one"
-     )
-   );
- }
-//  check newPassword and confirmPassword are same
-if(newPassword !== confirmPassword){
-  return next(
-    createHttpError(400, "New password and confirm password do not match")
-  );
- }
-// proceed to hash password
-const salt = await bcrypt.genSalt(10);
-const hashedPassword = await bcrypt.hash(newPassword, salt);
-user.password = hashedPassword;
-user.passwordResetToken = null;
-user.passwordResetTokenExpires = null;
-await user.save();
-res
-  .status(200)
-  .json({ success: true, message: "Password has been updated" });
-} catch (error) {
-  next(error);
- }
+    // find user
+    const user = await User.findOne({
+      _id: userId,
+      passwordResetToken: passwordToken,
+    }).select("+passwordResetToken +passwordResetTokenExpires");
+    if (!user) {
+      return next(createHttpError(404, "User or invalid reset token"));
+    }
+    // check token expiry
+    if (user.passwprdResetTokenExpires < Date.now()) {
+      user.passwordResetToken = null;
+      user.passwordResetTokenExpires = null;
+      await user.save();
+      return next(
+        createHttpError(
+          401,
+          "Password reseet link has expired, please request a new one"
+        )
+      );
+    }
+    //  check newPassword and confirmPassword are same
+    if (newPassword !== confirmPassword) {
+      return next(
+        createHttpError(400, "New password and confirm password do not match")
+      );
+    }
+    // proceed to hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    user.passwordResetToken = null;
+    user.passwordResetTokenExpires = null;
+    await user.save();
+    res
+      .status(200)
+      .json({ success: true, message: "Password has been updated" });
+  } catch (error) {
+    next(error);
+  }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // 201 is the successful code for a new statutory document
 

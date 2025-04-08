@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react"
+import { useState, useEffect, useCallback } from "react";
 import { AuthContext } from ".";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { authenticateUser } from "../api/auth";
@@ -8,42 +8,49 @@ export default function AuthProvider({ children }) {
     "instashotsToken",
     null
   );
-  const [user, setUser] = useState({
-    isError: null,
-    data: null,
-    isAuthenticated: false,
-  });
+  const [user, setUser] = useState(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
 
-  useEffect(()=> {
-    if(!accessToken) return
-    const getUser = async()=> {
+  const handleLogout = useCallback(() => {
+    setAccessToken(null);
+    setUser(null);
+    toast.success("You are logged out", { id: "logout"});
+  }, [setAccessToken]);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    const getUser = async () => {
       try {
         setIsCheckingAuth(true);
         const res = await authenticateUser(accessToken);
-        if(res.status === 200) {
-          setUser((prev) =>({
-             ...prev,
-            data: res.data,
-            isError: null,
-            isAuthenticated: true,
-          }));
+        if (res.status === 200) {
+          setUser(res.data.user);
         }
       } catch (error) {
         console.log(error);
+        handleLogout();
       } finally {
         setIsCheckingAuth(false);
-       }
+      }
     };
-  getUser()
-  }, [accessToken]);
+    getUser();
+  }, [accessToken, handleLogout]);
 
   console.log(user);
   return (
-    <AuthContext.Provider 
-    value={{ accessToken, setAccessToken, user, isCheckingAuth }}
+    <AuthContext.Provider
+      value={{
+        accessToken,
+        setAccessToken,
+        user,
+        isCheckingAuth,
+        handleLogout,
+      }}
     >
       {children}
     </AuthContext.Provider>
   );
-};
+}
+
+// useMemo memorise a value
+//useCallBack memorise a function

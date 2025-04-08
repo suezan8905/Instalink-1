@@ -12,6 +12,8 @@ const corsOption = {
   methods: ["GET", "POST", "PATCH", "DELETE"],
   Credentials: true,
 };
+
+// put: this will update the whole document, while PATCH: replace a part (morelike an edited part of the document)
 // the above is to enable our server relate with the client, so we want specificity hence using the CORS. and (cors(corsOption))  is written to pass exactly what we want
 
 app.use(cors(corsOption)); //allows external origin points to communicate with the server

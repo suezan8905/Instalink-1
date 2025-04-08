@@ -132,7 +132,8 @@ export default function Register() {
                 id="Password"
                 // the form was gotten from the previous project, it is majorly for the text area.
                 {...register("password", {
-                  validate: (value) => validatePassword(value),
+                  validate: (value) => 
+                    validatePassword(value, "Password is required"),
                 })}
               />
 
